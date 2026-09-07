@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Jakub Malik | Academic Portfolio</title>
+    <!-- Google Fonts & FontAwesome for icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-color: #0284c7;
+            --accent-hover: #0369a1;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --border-color: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--text-primary);
+            text-decoration: none;
+            margin-left: 1.2rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        nav a:hover {
+            color: var(--accent-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-left: 1.2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 3rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-img-placeholder {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            color: white;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero h2 {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+
+        .affiliation {
+            font-size: 1rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .social-links a:hover {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        /* Sections */
+        section {
+            padding: 3rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        section:last-of-type {
+            border-bottom: none;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 40px;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        /* Skills Tags */
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .skill-tag {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+        }
+
+        /* Publications Cards */
+        .pub-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.2rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: block;
+            text-decoration: none;
+        }
+
+        .pub-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-color);
+        }
+
+        .pub-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+            transition: var(--transition);
+        }
+
+        .pub-card:hover .pub-title {
+            color: var(--accent-color);
+        }
+
+        .pub-authors {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pub-source {
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        /* Teaching Subtle List Style */
+        .teaching-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .teaching-group h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .teaching-group ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .teaching-group li {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .teaching-group li::before {
+            content: '–';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* Projects List Style */
+        .projects-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .project-row {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .project-row:hover {
+            border-color: var(--accent-color);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .project-row h4 {
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .project-year {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background-color: var(--bg-color);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .dark-mode .badge {
+            background-color: #0369a1;
+            color: #e0f2fe;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            nav a { margin-left: 0.8rem; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Dr. Jakub Malik</div>
+        <nav>
+            <a href="#about">About</a>
+            <a href="#interests">Interests</a>
+            <a href="#publications">Publications</a>
+            <a href="#teaching">Teaching</a>
+            <a href="#projects">Grants</a>
+            <a href="#cognitioning">COGNITIONING</a>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Hero / Profile Section -->
+        <section class="hero" id="about">
+            <div class="profile-img-placeholder">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <h1>Jakub Malik, PhD</h1>
+            <h2>Assistant Professor | Sports Psychology, Psychophysiology & Motor Control</h2>
+            <div class="affiliation">
+                <i class="fa-solid fa-building-columns"></i> Poznan University of Physical Education
+            </div>
+            
+            <div class="social-links">
+                <a href="https://www.researchgate.net/profile/Jakub-Malik" target="_blank" title="ResearchGate"><i class="fa-brands fa-researchgate"></i></a>
+                <a href="https://scholar.google.com/citations?user=bvqSIcYAAAAJ&hl=pl" target="_blank" title="Google Scholar"><i class="fa-solid fa-graduation-cap"></i></a>
+                <a href="https://orcid.org/0000-0002-5633-1672" target="_blank" title="ORCID"><i class="fa-brands fa-orcid"></i></a>
+                <a href="https://osf.io/7t963/" target="_blank" title="OSF Profile"><i class="fa-solid fa-box-archive"></i></a>
+                <a href="mailto:malik@awf.poznan.pl" title="Email"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+
+            <p style="max-width: 700px; text-align: center;">
+                Researcher at the Department of Sports Psychology. My academic work focuses on psychophysiology, motor learning and control, cognitive functioning, and the interplay between physical activity and neuroplasticity. I investigate placebo effects, cognitive-motor interactions, and the impact of ergogenic substances and nutritional interventions on human performance.
+            </p>
+        </section>
+
+        <!-- Research Interests -->
+        <section id="interests">
+            <h3>Skills & Expertise</h3>
+            <div class="skills-grid">
+                <div class="skill-tag">Sport Psychology</div>
+                <div class="skill-tag">Psychophysiology</div>
+                <div class="skill-tag">Motor Learning & Motor Control</div>
+                <div class="skill-tag">Cognitive Science & Neuroplasticity</div>
+                <div class="skill-tag">Exercise Science</div>
+                <div class="skill-tag">Human Nutrition & Ergogenic Substances</div>
+                <div class="skill-tag">Postural Balance</div>
+                <div class="skill-tag">Physical Activity</div>
+                <div class="skill-tag">Psychodietetics</div>
+            </div>
+        </section>
+
+        <!-- Selected Publications -->
+        <section id="publications">
+            <h3>Selected Publications</h3>
+            
+            <a href="https://doi.org/10.1007/s11357-026-02204-z" target="_blank" class="pub-card">
+                <div class="pub-title">From stiffness to automaticity: visuomotor training alters postural control strategies in older adults</div>
+                <div class="pub-authors">Jakub Malik, Natalia Główka</div>
+                <div class="pub-source"><i class="fa-solid fa-link"></i> GeroScience</div>
+            </a>
+
+            <a href="https://doi.org/10.1186/s11556-024-00351-w" target="_blank" class="pub-card">
+                <div class="pub-title">Effect of a juggling-based physical activity on postural stability, reaction time, and attention focus in older adults: a randomized crossover study</div>
+                <div class="pub-authors">Jakub Malik, Natalia Główka, Wojciech Jelonek, et al.</div>
+                <div class="pub-source"><i class="fa-solid fa-link"></i> European Review of Aging and Physical Activity</div>
+            </a>
+
+            <a href="https://doi.org/10.3390/ijerph19127102" target="_blank" class="pub-card">
+                <div class="pub-title">The Effect of Juggling as Dual-Task Activity on Human Neuroplasticity: A Systematic Review</div>
+                <div class="pub-authors">Jakub Malik, Rafał Stemplewski, Janusz Maciaszek</div>
+                <div class="pub-source"><i class="fa-solid fa-link"></i> International Journal of Environmental Research and Public Health</div>
+            </a>
+
+            <a href="https://doi.org/10.1080/15502783.2023.2301384" target="_blank" class="pub-card">
+                <div class="pub-title">The dose-dependent effect of caffeine supplementation on performance, reaction time and postural stability in CrossFit - a randomized placebo-controlled crossover trial</div>
+                <div class="pub-authors">Natalia Główka, Jakub Malik, Tomasz Podgórski et al.</div>
+                <div class="pub-source"><i class="fa-solid fa-link"></i> Journal of the International Society of Sports Nutrition</div>
+            </a>
+        </section>
+
+        <!-- Teaching Section -->
+        <section id="teaching">
+            <h3>Teaching & Courses</h3>
+            <div class="teaching-container">
+                <div class="teaching-group">
+                    <h4>Psychology & Methodology</h4>
+                    <ul>
+                        <li>General Psychology</li>
+                        <li>Psychology of Learning, Memory and Thinking</li>
+                        <li>Psychology of Motivation and Emotion</li>
+                        <li>Empirical Seminar</li>
+                    </ul>
+                </div>
+                <div class="teaching-group">
+                    <h4>Psychodietetics & Mental Health</h4>
+                    <ul>
+                        <li>Diet for Mental Health</li>
+                        <li>Psychodietetic Diagnostics</li>
+                        <li>Eating Disorders Therapy</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section (Tylko granty NCN) -->
+        <section id="projects">
+            <h3>Research Grants</h3>
+            <div class="projects-list">
+                
+                <div class="project-row">
+                    <span class="badge">NCN Preludium</span>
+                    <div class="project-header">
+                        <h4>Caffeine Placebo Effect & Performance</h4>
+                        <span class="project-year">2026 - 2029</span>
+                    </div>
+                    <p>The effect of expectations on physical performance and psychophysiological potential: A randomized, double-blind, placebo-controlled crossover study on the placebo effect in the context of caffeine supplementation. (<i>PI: Jakub Malik</i>)</p>
+                </div>
+
+                <div class="project-row">
+                    <span class="badge">NCN Preludium</span>
+                    <div class="project-header">
+                        <h4>Probiotics & Exercise-Induced GI Issues</h4>
+                        <span class="project-year">2025 - 2028</span>
+                    </div>
+                    <p>Impact of short-term multi-strain probiotic supplementation on exercise-induced gastrointestinal symptoms in trained women under controlled conditions during a professional training cycle. (<i>PI: Natalia Główka, Contractor: Jakub Malik</i>)</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Student Research Club COGNITIONING -->
+        <section id="cognitioning">
+            <h3>Student Research Club "COGNITIONING"</h3>
+            <div class="projects-list">
+                <div class="project-row">
+                    <span class="badge" style="background-color: #fef08a; color: #854d0e;">In Formation</span>
+                    <div class="project-header">
+                        <h4>About the Initiative</h4>
+                        <span class="project-year">Coming Soon</span>
+                    </div>
+                    <p>Founder and supervisor of the upcoming Student Research Club <strong>COGNITIONING</strong>. The club is currently in formation, aiming to bring together students passionate about experimental sports psychology, psychophysiology, cognitive neuroscience, and motor learning. Stay tuned for upcoming recruitment details and initial research meetings!</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Dr. Jakub Malik. All rights reserved. Built for academic portfolio presentation.</p>
+    </footer>
+
+    <script>
+        // Theme toggling logic
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const icon = themeToggle.querySelector('i');
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+    </script>
+</body>
+</html>
