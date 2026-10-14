@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="pl" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kompleksowe Laboratorium Pamięci: Peterson & Peterson oraz Ebbinghaus</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        },
+                        indigo: {
+                            50: '#eef2ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-300">
+
+    <!-- Navbar -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Peterson & Peterson / Ebbinghaus</p>
+                </div>
+            </div>
+            <nav class="hidden md:flex space-x-1">
+                <button onclick="switchTab('overview')" id="nav-overview" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-indigo-50 text-indigo-600 dark:bg-slate-700 dark:text-indigo-400">Wprowadzenie</button>
+                <button onclick="switchTab('peterson')" id="nav-peterson" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Peterson & Peterson</button>
+                <button onclick="switchTab('peterson-theory')" id="nav-peterson-theory" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Teoria Petersonów</button>
+                <button onclick="switchTab('ebbinghaus')" id="nav-ebbinghaus" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Krzywa Ebbinghausa</button>
+                <button onclick="switchTab('ebbinghaus-theory')" id="nav-ebbinghaus-theory" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Teoria Ebbinghausa</button>
+            </nav>
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile subnav -->
+        <div class="md:hidden flex overflow-x-auto px-4 py-2 border-t border-slate-200 dark:border-slate-700 space-x-2 bg-white dark:bg-slate-800">
+            <button onclick="switchTab('overview')" id="mob-nav-overview" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-indigo-50 text-indigo-600 dark:bg-slate-700 dark:text-indigo-400">Wprowadzenie</button>
+            <button onclick="switchTab('peterson')" id="mob-nav-peterson" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-slate-600 dark:text-slate-300">Peterson & Peterson</button>
+            <button onclick="switchTab('peterson-theory')" id="mob-nav-peterson-theory" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-slate-600 dark:text-slate-300">Teoria Petersonów</button>
+            <button onclick="switchTab('ebbinghaus')" id="mob-nav-ebbinghaus" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-slate-600 dark:text-slate-300">Ebbinghaus</button>
+            <button onclick="switchTab('ebbinghaus-theory')" id="mob-nav-ebbinghaus-theory" class="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-slate-600 dark:text-slate-300">Teoria Ebbinghausa</button>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- TAB 1: OVERVIEW -->
+        <section id="tab-overview" class="space-y-8">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-3xl p-8 md:p-12 text-white shadow-xl">
+                <h2 class="text-3xl md:text-5xl font-extrabold mt-4 mb-4">Badanie dynamiki ludzkiej pamięci</h2>
+                <p class="text-lg text-indigo-100 max-w-2xl leading-relaxed">
+                    Poznaj dwa fundamentalne eksperymenty poznawcze: krótko- i długoterminowe mechanizmy zaniku śladu pamięciowego, oparte na klasycznych badaniach empirycznych z 1959 oraz 1885 roku.
+                </p>
+                
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-stopwatch"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">1. Peterson & Peterson (1959)</h3>
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                        Bada zanik śladu w <strong>pamięci operacyjnej (krótkotrwałej)</strong> w skali sekundowej. Blokowanie powtarzania (rehearsal) przez aktywne zadanie arytmetyczne prowadzi do niemal całkowitego zaniku informacji w ciągu 18-20 sekund.
+                    </p>
+                    <button onclick="switchTab('peterson-theory')" class="text-indigo-600 dark:text-indigo-400 text-sm font-semibold hover:underline flex items-center space-x-1 pt-2">
+                        <span>Przeczytaj teorię i źródła</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">2. Hermann Ebbinghaus (1885)</h3>
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                        Bada <strong>pamięć długoterminową</strong> oraz krzywą zapominania bezsensownych sylab. Symulator uwzględnia głębokość przetworzenia (Craik & Lockhart, 1972) oraz potęgę powtórek rozłożonych w czasie (spaced repetition).
+                    </p>
+                    <button onclick="switchTab('ebbinghaus-theory')" class="text-brand-600 dark:text-brand-400 text-sm font-semibold hover:underline flex items-center space-x-1 pt-2">
+                        <span>Przeczytaj teorię i źródła</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: PETERSON & PETERSON EXPERIMENT -->
+        <section id="tab-peterson" class="space-y-8 hidden">
+            <div class="max-w-3xl mx-auto bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                
+                <div id="pet-step-intro" class="space-y-6">
+                    <div class="text-center">
+                        <span class="bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Paradygmat Peterson & Peterson (1959)</span>
+                        <h2 class="text-2xl font-bold mt-3">Eksperyment Pamięci Krótkotrwałej</h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-lg mx-auto">
+                            Wybierz czas zakłócenia (w sekundach) z dolnej tabeli lub wybierz własną długość czasu zakłócenia. Twoim zadaniem będzie zapamiętanie 3 spółgłosek (1 sekunda na zapamiętanie), które wyświetlą się w miejscu tego tekstu. Następnie przez określony czas (czas zakłócenia) Twoim zadaniem będzie wykonywanie działań arytmetycznych blokujących podtrzymywanie śladu pamięciowego. Zadanie polegać będzie na wybieraniu jednej spośród trzech wartości, tak by uzyskać wartość o 3 mniejszą od widocznej na ekranie. Zadanie arytmetyczne wykonuj jak najszybciej i jak najdokładniej! Powodzenia!
+                        </p>
+                    </div>
+
+                    <div class="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <label class="block text-sm font-medium">Wybierz czas zakłócenia (sekundy):</label>
+                        <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                            <button onclick="setPetersonDelay(3)" id="p-del-3" class="p-2.5 rounded-xl border border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 font-bold text-xs text-center transition-all">3s</button>
+                            <button onclick="setPetersonDelay(6)" id="p-del-6" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 font-bold text-xs text-center transition-all">6s</button>
+                            <button onclick="setPetersonDelay(9)" id="p-del-9" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 font-bold text-xs text-center transition-all">9s</button>
+                            <button onclick="setPetersonDelay(12)" id="p-del-12" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 font-bold text-xs text-center transition-all">12s</button>
+                            <button onclick="setPetersonDelay(15)" id="p-del-15" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 font-bold text-xs text-center transition-all">15s</button>
+                            <button onclick="setPetersonDelay(18)" id="p-del-18" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 font-bold text-xs text-center transition-all">18s</button>
+                            <button onclick="setPetersonDelay(24)" id="p-del-24" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 font-bold text-xs text-center transition-all">24s</button>
+                        </div>
+                        <div class="pt-2 flex items-center space-x-3">
+                            <span class="text-xs text-slate-500 whitespace-nowrap">Własna liczba sekund:</span>
+                            <input type="number" id="custom-delay-input" min="1" max="60" placeholder="np. 10" oninput="setCustomPetersonDelay(this.value)" class="w-24 p-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-center font-mono">
+                            <span class="text-xs text-slate-500">sekund</span>
+                        </div>
+                    </div>
+
+                    <button onclick="startPetersonTrial()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center space-x-2">
+                        <span>Rozpocznij próbę eksperymentalną</span>
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+
+                <div id="pet-step-trigram" class="space-y-6 hidden text-center">
+                    <span class="bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Krok 1 z 3: Zapamiętaj</span>
+                    <h2 class="text-xl font-bold">Zapamiętaj ten trigram spółgłosek:</h2>
+                    <div class="py-12 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 flex justify-center items-center">
+                        <span id="trigram-display" class="font-mono text-5xl font-black tracking-widest text-indigo-600">K R T</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Za chwilę rozpocznie się zadanie zakłócające...</p>
+                </div>
+
+                <div id="pet-step-distractor" class="space-y-6 hidden text-center">
+                    <span class="bg-amber-50 dark:bg-slate-700 text-amber-600 dark:text-amber-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Krok 2 z 3: Zadanie zakłócające</span>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                        <p class="text-xs text-slate-500">Aktualna baza liczbowa:</p>
+                        <div class="text-4xl font-extrabold text-amber-500 font-mono" id="distractor-current-num">482</div>
+                        <p class="text-sm font-medium pt-2">Wybierz poprawny wynik odejmowania <span class="text-amber-600 font-bold">- 3</span>:</p>
+                        <div id="distractor-choices" class="grid grid-cols-3 gap-3 pt-2"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-slate-500 px-4">
+                        <span>Pozostały czas: <strong id="pet-timer" class="text-amber-500 font-mono text-base">3</strong>s</span>
+                        <span>Poprawne operacje: <strong id="distractor-score">0</strong></span>
+                    </div>
+                </div>
+
+                <div id="pet-step-recall" class="space-y-6 hidden text-center">
+                    <span class="bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Krok 3 z 3: Przypomnienie</span>
+                    <h2 class="text-2xl font-bold">Wpisz zapamiętane litery:</h2>
+                    <p class="text-sm text-slate-500">Wpisz 3 spółgłoski w odpowiedniej kolejności.</p>
+                    <div class="flex justify-center space-x-3">
+                        <input type="text" id="recall-l1" maxlength="1" class="w-16 h-16 text-center uppercase font-mono text-3xl font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <input type="text" id="recall-l2" maxlength="1" class="w-16 h-16 text-center uppercase font-mono text-3xl font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <input type="text" id="recall-l3" maxlength="1" class="w-16 h-16 text-center uppercase font-mono text-3xl font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <button onclick="submitPetersonRecall()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition-all">
+                        Sprawdź wynik
+                    </button>
+                </div>
+
+                <div id="pet-step-results" class="space-y-6 hidden text-center">
+                    <div id="pet-result-icon" class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-3xl">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold" id="pet-result-title">Wynik próby</h2>
+                    <p id="pet-result-desc" class="text-sm text-slate-600 dark:text-slate-300">Poprawny trigram to <strong>K-R-T</strong>.</p>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-sm text-left">Wykres zaniku (Teoria vs Twoje próby)</h4>
+                            <button onclick="clearPetersonTrials()" class="text-xs text-indigo-600 hover:underline">Resetuj punkty</button>
+                        </div>
+                        <div class="relative w-full h-[260px]">
+                            <canvas id="petersonChart"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-400 text-center">Niebieska linia = klasyczna krzywa Peterson & Peterson &bull; Czerwone punkty = Twoje wykonane próby.</p>
+                    </div>
+                    <button onclick="resetPetersonTest()" class="w-full py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 font-semibold rounded-xl transition-all">
+                        Wykonaj kolejną próbę dla innego czasu
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 3: PETERSON THEORY & SOURCES -->
+        <section id="tab-peterson-theory" class="space-y-8 hidden">
+            <div class="max-w-4xl mx-auto bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div>
+                    <span class="bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Teoria i Metodologia</span>
+                    <h2 class="text-3xl font-extrabold mt-3">Eksperyment Peterson & Peterson (1959)</h2>
+                </div>
+
+                <div class="space-y-4 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                    <p>
+                        W 1959 roku kanadyjscy psychologowie <strong>Lloyd Peterson</strong> oraz <strong>Margaret Jean Peterson</strong> opublikowali w czasopiśmie <em>Journal of Experimental Psychology</em> przełomową pracę zatytułowaną <em>„Short-term retention of individual verbal items”</em>. Badanie to miało na celu rozstrzygnięcie, czy zanik informacji w pamięci krótkotrwałej jest wynikiem naturalnego rozpadu śladu pamięciowego w czasie (ang. <em>trace decay</em>), czy też efektem interferencji. Paradygmat, który zaprojektowali pozwolił odróżnić procesy pamięci krótkotrwałej od pamięci długoterminowej. Do tamtego momentu uważało się, że bez powtarzania informacje mogą tkwić w pamięci nieskończenie długo, o ile nic ich nie rozproszy.
+                        
+                        Eksperyment ten pokazał, że jeśli uniemożliwi się badanemu recytowanie literek (pętla fonologiczna) poprzez żmudne odejmowanie liczb, poprawność odtworzenia po 18 sekundach spadnie poniżej 10%!
+                    </p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                            <i class="fa-solid fa-shuffle text-indigo-600"></i>
+                            <span>Zanik Śladu Pamięciowego (Trace Decay) kontra Interferencja</span>
+                        </h3>
+                        <p>
+                            Wokół wyników Petersonów wywiązała się historyczna debata w psychologii poznawczej dotycząca natury zapominania w krótkim okresie:
+                        </p>
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li><strong>Teoria rozpadu w czasie (Trace Decay Theory):</strong> Zakłada, że ślad neurobiologiczny w pamięci operacyjnej spontanicznie ulega erozji i rozkładowi pod wpływem upływu czasu, podobnie jak ślad stopy na plaży zmywany przez falę.</li>
+                            <li><strong>Teoria interferencji (Interference Theory):</strong> Głównym jej reprezentantem był John Keppel i Benton Underwood (1962). Udowodnili oni, że spadek poprawności w kolejnych próbach Petersonów wynika z <strong>interferencji proaktywnej</strong> – poprzednio zapamiętane trigramy „nakładają się” i mieszają w pamięci z aktualnym trigramem.</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 pt-2">Metodologia eksperymentalna</h3>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>Materiał bodźcowy:</strong> Trigramy spółgłosek (np. C-H-J), które nie tworzą łatwych do zapamiętania słów ani skojarzeń semantycznych.</li>
+                        <li><strong>Zadanie zakłócające:</strong> Uczestnik słyszał trigram, a następnie od razu otrzymywał trzycyfrową liczbę (np. 482) i miał za zadanie głośno lub w pamięci odliczać wstecz co 3 (479, 476, 473...).</li>
+                        <li><strong>Rola zadania zakłócającego:</strong> Uniemożliwienie tzw. powtarzania podgłosowego (rehearsal). Bez możliwości recytowania litery znikają z pamięci operacyjnej w zawrotnym tempie.</li>
+                        <li><strong>Zmienne interwały:</strong> Badani byli proszeni o odtworzenie trigramu po 3, 6, 9, 12, 15 lub 18 sekundach odliczania.</li>
+                    </ul>
+
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 pt-2">Główne wnioski i wyniki</h3>
+                    <p>
+                        Wyniki pokazały dramatyczny spadek poprawności odtworzenia: z ok. 90% po 3 sekundach do zaledwie kilkunastu procent po 18 sekundach. Odkrycie to dowiodło, że czas trwania pamięci krótkotrwałej bez aktywnego podtrzymywania jest bardzo ograniczony (szacowany wówczas na kilkanaście sekund), co stało się fundamentem późniejszych modeli pamięci operacyjnej (m.in. modelu Baddeley'a i Hitcha).
+                    </p>
+                    
+                     <div class="space-y-3">
+                        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                            <i class="fa-solid fa-network-wired text-indigo-600"></i>
+                            <span>Nowoczesny Model Pamięci Operacyjnej (Baddeley & Hitch, 1974)</span>
+                        </h3>
+                        <p>
+                            Wyniki Petersonów legły u podstaw współczesnego pojęcia <strong>pamięci operacyjnej (working memory)</strong> zaproponowanego przez Alana Baddeley'a i Grahama Hitcha. Pamięć operacyjna nie jest pasywnym magazynem, lecz dynamicznym systemem składającym się z:
+                        </p>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li><strong>Centralnego Zarządcy (Central Executive):</strong> Alokuje uwagę i zarządza zasobami.</li>
+                            <li><strong>Pętli Fonologicznej (Phonological Loop):</strong> Odpowiada za utrzymywanie materiału werbalnego (to ją blokujemy w zadaniu odejmowania co 3).</li>
+                            <li><strong>Szkicownika Wzrokowo-Przestrzennego (Visuospatial Sketchpad).</strong></li>
+                            <li><strong>Bufora Epizodycznego (Episodic Buffer).</strong></li>
+                        </ol>
+
+<div class="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">Bibliografia i Źródła Naukowe:</h4>
+                        <ul class="space-y-2 font-mono text-xs text-slate-500 dark:text-slate-400">
+                            <a href="https://drive.google.com/file/d/1ittQkkZgELN5XhmRxvT7Zd4zh_C4ahLV/view?usp=drive_link" target="_blank" style="color: #0066cc; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#004499'; this.style.textDecoration='underline';" onmouseout="this.style.color='#0066cc'; this.style.textDecoration='none';"><li>&bull; Peterson, L. R., & Peterson, M. J. (1959). Short-term retention of individual verbal items. ><em>Journal of Experimental Psychology</em>, 58(3), 193–198.</a></li>
+                            <a href="https://drive.google.com/file/d/1H_OW4PIRCCIpEHcH9wjbQignwVfGYKL6/view?usp=sharing" target="_blank" style="color: #0066cc; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#004499'; this.style.textDecoration='underline';" onmouseout="this.style.color='#0066cc'; this.style.textDecoration='none';"><li>&bull; Keppel, G., & Underwood, B. J. (1962). Proactive inhibition in short-term retention of single items. <em>Journal of Verbal Learning and Verbal Behavior</em>, 1(3), 153–161.</a></li>
+                            <a href="https://drive.google.com/file/d/1JfrFessjcIYoMG1UolUOTe0B8ubEc6TW/view?usp=sharing" target="_blank" style="color: #0066cc; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#004499'; this.style.textDecoration='underline';" onmouseout="this.style.color='#0066cc'; this.style.textDecoration='none';"><li>&bull; Baddeley, A. D., & Hitch, G. (1974). Working memory. In <em>The psychology of learning and motivation</em> (Vol. 8, pp. 47–89). Academic Press.</a></li>
+                            <a href="https://drive.google.com/file/d/1mHHhdTT4Ty2ukK8Ri6vAzFcW6GO3TPJO/view?usp=sharing" target="_blank" style="color: #0066cc; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#004499'; this.style.textDecoration='underline';" onmouseout="this.style.color='#0066cc'; this.style.textDecoration='none';"><li>&bull; Waugh, N. C., & Norman, D. A. (1965). Primary memory. <em>Psychological Review</em>, 72(2), 89–104.</a></li>
+                        </ul>
+                    </div>
+                </div>
+	</div)
+                    
+           <div class="mt-8 flex flex-wrap gap-4">
+                    <button onclick="switchTab('peterson')" class="px-6 py-3 bg-indigo-800/60 text-white border border-indigo-400/30 font-semibold rounded-xl hover:bg-indigo-800 transition-all">
+                        Przejdź do Eksperymentu Petersonów
+                    </button>
+            </div>
+            
+        </section>
+        
+        
+
+        <!-- TAB 4: EBBINGHAUS EXPERIMENT -->
+        <section id="tab-ebbinghaus" class="space-y-8 hidden">
+           
+            <!-- Ebbinghaus Mini Memory Test -->
+            <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm max-w-xl mx-auto">
+                <div id="eb-test-step-1" class="space-y-6 text-center">
+                    <span class="bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Test pamięci sylab</span>
+                    <h3 class="text-xl font-bold">Sprawdź swoją pamięć długoterminową</h3>
+                    <p class="text-sm text-slate-500">
+                        Sylaby są całkowicie ukryte do momentu kliknięcia startu. Twoim zadaniem będzie zapamiętanie pięciu różnych sylab w ciągu 12 sekund i odtworzenie ich w kolejnym kroku.  Wybierz liczbę sylab do zapamiętania:
+                    </p>
+                    <div class="flex items-center justify-center space-x-4">
+                        <label class="text-sm font-medium">Liczba sylab: <span id="syllables-count-label" class="font-bold text-brand-600">5</span></label>
+                        <input type="range" id="syllables-count-slider" min="3" max="15" value="5" oninput="document.getElementById('syllables-count-label').innerText = this.value" class="w-36 accent-brand-600 cursor-pointer">
+                    </div>
+                    <button onclick="startEbbinghausTest()" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow transition-all">
+                        Rozpocznij test sylab
+                    </button>
+                </div>
+
+                <div id="eb-test-step-learning" class="space-y-6 hidden text-center">
+                    <span class="bg-brand-50 dark:bg-slate-700 text-brand-600 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Nauka w toku</span>
+                    <h3 class="text-xl font-bold">Zapamiętaj te sylaby:</h3>
+                    <div id="eb-syllables-box" class="grid grid-cols-3 sm:grid-cols-5 gap-2 my-4"></div>
+                    <div class="text-3xl font-extrabold text-brand-600 font-mono" id="eb-countdown">12</div>
+                    <p class="text-xs text-slate-500">Sekund do testu odtworzenia</p>
+                </div>
+
+                <div id="eb-test-step-recall" class="space-y-6 hidden">
+                    <h3 class="text-xl font-bold text-center">Test odtworzenia</h3>
+                    <p class="text-xs text-slate-500 text-center">Wpisz zapamiętane sylaby, oddziel je spacją.</p>
+                    <textarea id="eb-recall-input" rows="3" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="podaj zapamiętane sylaby, oddziel je spacją"></textarea>
+                    <button onclick="submitEbbinghausRecall()" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow transition-all">
+                        Sprawdź wynik
+                    </button>
+                </div>
+
+                <div id="eb-test-step-result" class="space-y-6 hidden text-center">
+                    <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">Wynik testu</h3>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
+                        <p class="text-sm text-slate-500">Odtworzone prawidłowo:</p>
+                        <p id="eb-score-val" class="text-3xl font-black text-brand-600">80%</p>
+                        <p id="eb-score-desc" class="text-xs text-slate-400">Prawidłowe sylaby pojawią się tutaj</p>
+                    </div>
+                    <button onclick="resetEbbinghausTest()" class="w-full py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 font-semibold rounded-xl transition-all">
+                        Powtórz test
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: EBBINGHAUS THEORY & SOURCES -->
+        <section id="tab-ebbinghaus-theory" class="space-y-8 hidden">
+            <div class="max-w-4xl mx-auto bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div>
+                    <span class="bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Teoria i Metodologia</span>
+                    <h2 class="text-3xl font-extrabold mt-3">Krzywa Zapominania Ebbinghausa & Teoria Głębokości Przetworzenia</h2>
+                </div>
+
+                <div class="space-y-4 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                    <p>
+                        Niemiecki psycholog <strong>Hermann Ebbinghaus</strong> w 1885 roku opublikował pionierskie dzieło <em>„Über das Gedächtnis”</em> („O pamięci”), w którym po raz pierwszy w historii zastosował rygorystyczną metodę eksperymentalną do badania wyższych procesów psychicznych. Aby wyeliminować wpływ wcześniejszych skojarzeń i znaczeń językowych, Ebbinghaus stworzył ponad 2300 bezsensownych sylab (złożonych z dwóch spółgłosek i samogłoski w środku, np. DAX, WUZ).
+                    </p>
+
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 pt-2">Kluczowe odkrycia Ebbinghausa</h3>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>Nieliniowy spadek:</strong> Zapominanie nie jest jednostajne – najgwałtowniejszy spadek skuteczności pamięciowej zachodzi w ciągu pierwszych 20 minut oraz 24 godzin od zakończenia nauki.</li>
+                        <li><strong>Oszczędność czasu (Savings Method):</strong> Ebbinghaus mierzyl, o ile mniej czasu potrzebuje na ponowne nauczenie się tej samej listy sylab po upływie określonego czasu.</li>
+                        <li><strong>Powtórki w odstępach czasu (Spaced Repetition):</strong> Wprowadzenie powtórek w odpowiednich momentach trwale wypłaszcza krzywą i wzmacnia ślad pamięciowy (synaptyczną potencjację długoterminową – LTP).</li>
+                    </ul>
+
+                   <div class="space-y-6 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                    <div class="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                            <i class="fa-solid fa-atom text-brand-600"></i>
+                            <span>1. Metoda Oszczędności Czasu (Savings Method)</span>
+                        </h3>
+                        <p>
+                            Hermann Ebbinghaus stanął przed fundamentalnym problemem metodologicznym: jak zmierzyć pamięć o czymś, czego badany wydaje się w ogóle nie pamiętać? Tradycyjne miary (przypomnienie swobodne czy rozpoznanie) zawodziły przy długich interwałach czasowych. Ebbinghaus wynalazł więc rewolucyjną <strong>metodę oszczędności czasu (niem. <em>Ersparnismethode</em>)</strong>.
+                        </p>
+                        <p>
+                            Zamiast pytać, czy badany pamięta listę, Ebbinghaus mierzył, o ile szybciej jest w stanie nauczyć się jej po raz drugi w porównaniu do pierwotnej sesji. Wzór matematyczny opisujący wskaźnik oszczędności (<span class="font-mono font-bold text-brand-600">S</span>) wyraża się następująco:
+                        </p>
+                        <div class="p-4 bg-white dark:bg-slate-800 rounded-xl font-mono text-center text-xs md:text-sm font-bold border border-slate-200 dark:border-slate-700">
+                            S = [ ( T₁ - T₂ ) / T₁ ] &times; 100%
+                        </div>
+                        <p class="text-xs text-slate-500">
+                            Gdzie <span class="font-mono font-bold">T₁</span> to liczba sekund (lub prób) potrzebna na pierwszą bezbłędną naukę listy, a <span class="font-mono font-bold">T₂</span> to czas potrzebny na ponowne opanowanie tej samej listy po określonym czasie. Nawet jeśli badany twierdził, że nic nie pamięta (<span class="font-mono">T₂ > 0</span>), oszczędność czasu dowodziła istnienia podświadomego śladu pamięciowego.
+                        </p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                            <i class="fa-solid fa-rotate text-brand-600"></i>
+                            <span>2. Mechanizm Powtórek w Odstępach Czasu (Spaced Repetition) i Efekt Rozstawienia</span>
+                        </h3>
+                        <p>
+                            Ebbinghaus zauważył, że nauka masowa (ang. <em>massed practice</em>, czyli "wkuwanie" naraz) jest drastycznie mniej efektywna niż nauka rozłożona w czasie (ang. <em>spaced practice</em>). Gdy powtarzamy materiał tuż przed tym, jak krzywa zapominania drastycznie spadnie, każda kolejna powtórka wymaga znacznie mniej wysiłku neurobiologicznego.
+                        </p>
+                        <p>
+                            W ujęciu kognitywnym powtórka z rosnącym interwałem (ang. <em>expanding intervals</em>) zmusza mózg do tzw. <strong>aktywnego odtwarzania (active recall)</strong>. Sygnał nerwowy musi na nowo odtworzyć osłabione ścieżki synaptyczne, co paradoksalnie drastycznie wzmacnia trwałość połączenia.
+                        </p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                            <i class="fa-solid fa-bolt text-brand-600"></i>
+                            <span>3. Neurobiologia Pamięci: Długoterminowa Potencjacja Synaptyczna (LTP)</span>
+                        </h3>
+                        <p>
+                            Choć Ebbinghaus nie dysponował nowoczesnym sprzętem neuroobrazującym, jego krzywa zapominania idealnie odzwierciedla biochemiczne procesy zachodzące w hipokampie i kory mózgowej. Kluczowym mechanizmem komórkowym jest <strong>Długoterminowa Potencjacja Synaptyczna (LTP – <em>Long-Term Potentiation</em>)</strong>.
+                        </p>
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li><strong>Aktywacja receptora NMDA:</strong> Gdy powtarzamy informację, synapsy międzyneuronowe są intensywnie stymulowane. Napływ jonów wapnia (<span class="font-mono">Ca²⁺</span>) inicjuje kaskadę kinaz białkowych.</li>
+                            <li><strong>Ekspresja genów (CREB):</strong> Sygnały docierają do jądra komórkowego neuronu, aktywując czynniki transkrypcyjne (np. CREB), co prowadzi do syntezy nowych białek strukturalnych.</li>
+                            <li><strong>Powiększenie kolców dendrytycznych:</strong> Synapsy fizycznie się rozrastają, a połączenia stają się trwałe, co fizycznie wypłaszcza krzywą zapominania.</li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                            <i class="fa-solid fa-layer-group text-brand-600"></i>
+                            <span>4. Teoria Głębokości Przetworzenia (Craik & Lockhart, 1972)</span>
+                        </h3>
+                        <p>
+                            Uzupełnieniem klasycznej krzywej Ebbinghausa jest model Fergus Craika i Roberta Lockharta. Twierdzili oni, że trwałość pamięci nie zależy wyłącznie od liczby powtórek, ale od <strong>głębokości analizy bodźca</strong>:
+                        </p>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li><strong>Przetwarzanie płytkie (strukturalne/wzrokowe):</strong> Zwrócenie uwagi na kształt liter czy czcionkę. Ślad zanika natychmiast.</li>
+                            <li><strong>Przetwarzanie pośrednie (fonemiczne):</strong> Skupienie się na brzmieniu słowa i rymach.</li>
+                            <li><strong>Przetwarzanie głębokie (semantyczne):</strong> Nadanie informacji znaczenia, osadzenie w kontekście i powiązanie z wiedzą własną. Wtedy krzywa zapominania jest najbardziej płaska.</li>
+                        </ol>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">Bibliografia i Źródła Naukowe:</h4>
+                        <ul class="space-y-2 font-mono text-xs text-slate-500 dark:text-slate-400">
+                            <a href="https://archive.org/details/berdasgedchtnis01ebbigoog/mode/2up" target="_blank" style="color: #0066cc; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#004499'; this.style.textDecoration='underline';" onmouseout="this.style.color='#0066cc'; this.style.textDecoration='none';"><li>&bull; Ebbinghaus, H. (1885). <em>Über das Gedächtnis: Untersuchungen zur experimentellen Psychologie</em>. Duncker & Humblot.</a></li>
+                            <a href="https://drive.google.com/file/d/1Mbs31emj8ZFBV7R8A1vOKKmfA2eUhKQG/view?usp=sharing" target="_blank" style="color: #0066cc; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#004499'; this.style.textDecoration='underline';" onmouseout="this.style.color='#0066cc'; this.style.textDecoration='none';"><li>&bull; Craik, F. I. M., & Lockhart, R. S. (1972). Levels of processing: A framework for memory research. <em>Journal of Verbal Learning and Verbal Behavior</em>, 11(6), 671–684.</a></li>
+                            <a href="https://drive.google.com/file/d/11Bfc1vAW-EtzHx4PWmKrVRpBh75D7778/view?usp=sharing" target="_blank" style="color: #0066cc; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#004499'; this.style.textDecoration='underline';" onmouseout="this.style.color='#0066cc'; this.style.textDecoration='none';"><li>&bull; Bliss, T. V., & Lømo, T. (1973). Long-lasting potentiation of synaptic transmission in the dentate area of the anaesthetized rabbit following stimulation of the perforant path. <em>The Journal of Physiology</em>, 232(2), 331–356.</a></li>
+                            <a href="https://drive.google.com/file/d/1vxSZKM3yr_JrUMw9KXY8WS8SFkTA1qoj/view?usp=sharing" target="_blank" style="color: #0066cc; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#004499'; this.style.textDecoration='underline';" onmouseout="this.style.color='#0066cc'; this.style.textDecoration='none';"><li>&bull; Murre, J. M., & Dros, J. (2015). Replication and analysis of Ebbinghaus' forgetting curve. <em>PLoS ONE</em>, 10(7), e0120644.</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex flex-wrap gap-4">
+                    <button onclick="switchTab('ebbinghaus')" class="px-6 py-3 bg-indigo-800/60 text-white border border-indigo-400/30 font-semibold rounded-xl hover:bg-indigo-800 transition-all">
+                        Przejdź do badania krzywej Ebbinghausa
+                    </button>
+                </div>
+        </section>
+
+    </main>
+
+    <!-- Script -->
+    <script>
+        let currentTab = 'overview';
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            updateChartsTheme();
+        }
+
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            ['overview', 'peterson', 'peterson-theory', 'ebbinghaus', 'ebbinghaus-theory'].forEach(t => {
+                const sec = document.getElementById(`tab-${t}`);
+                const navBtn = document.getElementById(`nav-${t}`);
+                const mobBtn = document.getElementById(`mob-nav-${t}`);
+                if (t === tabId) {
+                    sec.classList.remove('hidden');
+                    if(navBtn) navBtn.className = "px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-indigo-50 text-indigo-600 dark:bg-slate-700 dark:text-indigo-400";
+                    if(mobBtn) mobBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-indigo-50 text-indigo-600 dark:bg-slate-700 dark:text-indigo-400";
+                } else {
+                    sec.classList.add('hidden');
+                    if(navBtn) navBtn.className = "px-3 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700";
+                    if(mobBtn) mobBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap text-slate-600 dark:text-slate-300";
+                }
+            });
+
+            if (tabId === 'peterson' && !petersonChartInstance) initPetersonChart();
+            if (tabId === 'ebbinghaus' && !ebbinghausChartInstance) initEbbinghausChart();
+        }
+
+        // ==================== PETERSON & PETERSON LOGIC ====================
+        let petDelay = 3;
+        let petTrigram = "";
+        let petCurrentNum = 500;
+        let petDistractorScoreCount = 0;
+        let petDistractorTimer = null;
+        let petSecondsLeft = 0;
+        let petersonChartInstance = null;
+        let userPetersonTrials = [];
+
+        function setPetersonDelay(seconds) {
+            petDelay = seconds;
+            document.getElementById('custom-delay-input').value = "";
+            [3, 6, 9, 12, 15, 18, 24].forEach(d => {
+                const btn = document.getElementById(`p-del-${d}`);
+                if (btn) {
+                    if (d === seconds) {
+                        btn.className = "p-2.5 rounded-xl border border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 font-bold text-xs text-center transition-all";
+                    } else {
+                        btn.className = "p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 font-bold text-xs text-center transition-all";
+                    }
+                }
+            });
+        }
+
+        function setCustomPetersonDelay(val) {
+            const num = parseInt(val);
+            if (!isNaN(num) && num > 0) {
+                petDelay = num;
+                [3, 6, 9, 12, 15, 18, 24].forEach(d => {
+                    const btn = document.getElementById(`p-del-${d}`);
+                    if(btn) btn.className = "p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 font-bold text-xs text-center transition-all";
+                });
+            }
+        }
+
+        const consonants = "BCDFGHJKLMNPQRSTVWXYZ";
+
+function generateTrigram() {
+    let pool = consonants.split('');
+    let chosen = [];
+    
+    // Losujemy 3 różne litery z puli
+    while(chosen.length < 3) {
+        let randomIndex = Math.floor(Math.random() * pool.length);
+        let letter = pool[randomIndex];
+        // Upewniamy się, że litera się nie powtarza
+        if(!chosen.includes(letter)) {
+            chosen.push(letter);
+        }
+    }
+    
+    // Zwracamy litery oddzielone spacją (np. "K R T")
+    return chosen.join(' ');
+}
+
+        function startPetersonTrial() {
+            petTrigram = generateTrigram();
+            document.getElementById('trigram-display').innerText = petTrigram;
+
+            document.getElementById('pet-step-intro').classList.add('hidden');
+            document.getElementById('pet-step-trigram').classList.remove('hidden');
+
+            setTimeout(() => {
+                document.getElementById('pet-step-trigram').classList.add('hidden');
+                document.getElementById('pet-step-distractor').classList.remove('hidden');
+
+                petCurrentNum = Math.floor(Math.random() * 300) + 400;
+                petDistractorScoreCount = 0;
+                document.getElementById('distractor-score').innerText = 0;
+                renderDistractorChoices();
+
+                petSecondsLeft = petDelay;
+                document.getElementById('pet-timer').innerText = petSecondsLeft;
+
+                petDistractorTimer = setInterval(() => {
+                    petSecondsLeft--;
+                    document.getElementById('pet-timer').innerText = petSecondsLeft;
+                    if (petSecondsLeft <= 0) {
+                        clearInterval(petDistractorTimer);
+                        document.getElementById('pet-step-distractor').classList.add('hidden');
+                        document.getElementById('pet-step-recall').classList.remove('hidden');
+                        document.getElementById('recall-l1').value = "";
+                        document.getElementById('recall-l2').value = "";
+                        document.getElementById('recall-l3').value = "";
+                        document.getElementById('recall-l1').focus();
+                    }
+                }, 1000);
+            }, 1000);
+        }
+
+        function renderDistractorChoices() {
+            document.getElementById('distractor-current-num').innerText = petCurrentNum;
+            const correctVal = petCurrentNum - 3;
+            
+            let choices = [correctVal, correctVal + (Math.random() > 0.5 ? 2 : -1), correctVal + (Math.random() > 0.5 ? 4 : -3)];
+            choices.sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById('distractor-choices');
+            container.innerHTML = choices.map(val => `
+                <button onclick="handleDistractorClick(${val}, ${correctVal})" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-white font-mono font-bold text-lg rounded-xl border border-slate-200 dark:border-slate-700 transition-colors">
+                    ${val}
+                </button>
+            `).join('');
+        }
+
+        function handleDistractorClick(selected, correct) {
+            if (selected === correct) {
+                petDistractorScoreCount++;
+                document.getElementById('distractor-score').innerText = petDistractorScoreCount;
+            }
+            petCurrentNum = correct;
+            renderDistractorChoices();
+        }
+
+        function submitPetersonRecall() {
+            const l1 = document.getElementById('recall-l1').value.trim().toUpperCase();
+            const l2 = document.getElementById('recall-l2').value.trim().toUpperCase();
+            const l3 = document.getElementById('recall-l3').value.trim().toUpperCase();
+
+            const userEntered = `${l1}${l2}${l3}`;
+            const correctClean = petTrigram.replace(/\s+/g, '');
+
+            let correctCount = 0;
+            for(let i=0; i<3; i++) {
+                if(userEntered[i] === correctClean[i]) correctCount++;
+            }
+
+            const success = (correctCount === 3);
+            const scoreVal = success ? 100 : (correctCount > 0 ? Math.round((correctCount/3)*100) : 0);
+
+            userPetersonTrials.push({ x: petDelay, y: scoreVal });
+
+            document.getElementById('pet-step-recall').classList.add('hidden');
+            document.getElementById('pet-step-results').classList.remove('hidden');
+
+            const icon = document.getElementById('pet-result-icon');
+            if (success) {
+                icon.className = "w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-3xl";
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+                document.getElementById('pet-result-title').innerText = "Bezbłędnie!";
+                document.getElementById('pet-result-desc').innerHTML = `Poprawny trigram to <strong>${petTrigram}</strong>. Odnotowano sukces po interwale ${petDelay} s.`;
+            } else {
+                icon.className = "w-16 h-16 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-3xl";
+                icon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                document.getElementById('pet-result-title').innerText = "Ślad pamięciowy zanikł!";
+                document.getElementById('pet-result-desc').innerHTML = `Poprawny trigram to <strong>${petTrigram}</strong> (Twoja odpowiedź: ${l1} ${l2} ${l3}). Skuteczność: ${scoreVal}%.`;
+            }
+
+            updatePetersonChart();
+        }
+
+        function resetPetersonTest() {
+            document.getElementById('pet-step-results').classList.add('hidden');
+            document.getElementById('pet-step-intro').classList.remove('hidden');
+        }
+
+        function clearPetersonTrials() {
+            userPetersonTrials = [];
+            updatePetersonChart();
+        }
+
+        function initPetersonChart() {
+            const ctx = document.getElementById('petersonChart').getContext('2d');
+            const isDark = document.documentElement.classList.contains('dark');
+
+            petersonChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Krzywa Peterson & Peterson (1959)',
+                            type: 'line',
+                            data: [
+                                {x: 3, y: 90},
+                                {x: 6, y: 65},
+                                {x: 9, y: 35},
+                                {x: 12, y: 20},
+                                {x: 15, y: 10},
+                                {x: 18, y: 7},
+                                {x: 24, y: 5}
+                            ],
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Twoje próby',
+                            data: userPetersonTrials,
+                            backgroundColor: '#f43f5e',
+                            borderColor: '#f43f5e',
+                            pointRadius: 7,
+                            pointHoverRadius: 9
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b', callback: v => v + '%' }
+                        },
+                        x: {
+                            type: 'linear',
+                            min: 0,
+                            max: 30,
+                            grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b', callback: v => v + 's' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updatePetersonChart() {
+            if (!petersonChartInstance) return;
+            petersonChartInstance.data.datasets[1].data = userPetersonTrials;
+            petersonChartInstance.update();
+        }
+
+        // ==================== EBBINGHAUS LOGIC ====================
+        let ebRepetitions = 0;
+        let ebbinghausChartInstance = null;
+        let currentTestSyllables = [];
+
+        const poolSyllables = ['DAX', 'WUZ', 'ZOF', 'KEM', 'TIV', 'BOP', 'LUN', 'ROF', 'VAX', 'JUP', 'ZEP', 'MEV', 'KOR', 'TIB', 'PUZ'];
+
+        function setEbbinghausReps(reps) {
+            ebRepetitions = reps;
+            for (let i = 0; i <= 3; i++) {
+                const btn = document.getElementById(`eb-rep-${i}`);
+                if (i === reps) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white dark:bg-slate-600 shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-300";
+                }
+            }
+            updateEbbinghausSimulation();
+        }
+
+        function calculateEbbinghausCurve(days, focusFactor, reps) {
+            const labels = [];
+            const data = [];
+
+            for (let d = 0; d <= days; d += (days > 30 ? 2 : 1)) {
+                if (d === 0) labels.push('0h');
+                else if (d === 1) labels.push('1 dzień');
+                else labels.push(`${d} dni`);
+
+                let stability = 2.2 * (focusFactor / 100);
+                if (reps === 1) stability = 9.0;
+                if (reps === 2) stability = 28.0;
+                if (reps >= 3) stability = 85.0;
+
+                let retention = 100 * Math.exp(-d / stability);
+                if (reps > 0 && d > 0) {
+                    retention = Math.min(100, retention + (reps * 18 * Math.exp(-d / (stability * 1.4))));
+                }
+                data.push(Math.max(15, Math.min(100, Math.round(retention))));
+            }
+            return { labels, data };
+        }
+
+        function initEbbinghausChart() {
+            const ctx = document.getElementById('ebbinghausChart').getContext('2d');
+            const days = parseInt(document.getElementById('eb-days').value);
+            const focus = parseInt(document.getElementById('eb-focus').value);
+            const { labels, data } = calculateEbbinghausCurve(days, focus, ebRepetitions);
+            const isDark = document.documentElement.classList.contains('dark');
+
+            ebbinghausChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Zachowana wiedza (%)',
+                        data: data,
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#22c55e'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b', callback: v => v + '%' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: isDark ? '#94a3b8' : '#64748b' }
+                        }
+                    }
+                }
+            });
+            updateEbbinghausStats(days, focus, ebRepetitions);
+        }
+
+        function updateEbbinghausSimulation() {
+            const days = parseInt(document.getElementById('eb-days').value);
+            const focus = parseInt(document.getElementById('eb-focus').value);
+            document.getElementById('eb-days-val').innerText = days + ' dni';
+
+            let focusText = 'Pełna uwaga (100%)';
+            if (focus < 80) focusText = 'Rozproszenie (' + focus + '%)';
+            else if (focus > 105) focusText = 'Głębokie przetworzenie (' + focus + '%)';
+            document.getElementById('eb-focus-val').innerText = focusText;
+
+            const { labels, data } = calculateEbbinghausCurve(days, focus, ebRepetitions);
+            if (ebbinghausChartInstance) {
+                ebbinghausChartInstance.data.labels = labels;
+                ebbinghausChartInstance.data.datasets[0].data = data;
+                ebbinghausChartInstance.update();
+            }
+            updateEbbinghausStats(days, focus, ebRepetitions);
+        }
+
+        function updateEbbinghausStats(days, focus, reps) {
+            let stability = 2.2 * (focus / 100);
+            if (reps === 1) stability = 9.0;
+            if (reps === 2) stability = 28.0;
+            if (reps >= 3) stability = 85.0;
+
+            const r20m = Math.min(100, Math.round(100 * Math.exp(-0.02 / stability)));
+            const r1h  = Math.min(100, Math.round(100 * Math.exp(-0.08 / stability)));
+            const r1d  = Math.min(100, Math.round(100 * Math.exp(-1 / stability) + (reps > 0 ? 20 : 0)));
+            const r6d  = Math.min(100, Math.round(100 * Math.exp(-6 / stability) + (reps > 0 ? 35 : 0)));
+            const r31d = Math.min(100, Math.round(100 * Math.exp(-31 / stability) + (reps > 0 ? 45 : 0)));
+
+            document.getElementById('eb-stat-20m').innerText = r20m + '%';
+            document.getElementById('eb-stat-1h').innerText = r1h + '%';
+            document.getElementById('eb-stat-1d').innerText = r1d + '%';
+            document.getElementById('eb-stat-6d').innerText = r6d + '%';
+            document.getElementById('eb-stat-31d').innerText = r31d + '%';
+        }
+
+        function updateChartsTheme() {
+            if (petersonChartInstance) {
+                const isDark = document.documentElement.classList.contains('dark');
+                petersonChartInstance.options.scales.y.grid.color = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                petersonChartInstance.update();
+            }
+            if (ebbinghausChartInstance) {
+                const isDark = document.documentElement.classList.contains('dark');
+                ebbinghausChartInstance.options.scales.y.grid.color = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                ebbinghausChartInstance.update();
+            }
+        }
+
+        let ebTimer = null;
+
+        function startEbbinghausTest() {
+            const count = parseInt(document.getElementById('syllables-count-slider').value);
+            let shuffled = [...poolSyllables].sort(() => 0.5 - Math.random());
+            currentTestSyllables = shuffled.slice(0, count);
+
+            document.getElementById('eb-test-step-1').classList.add('hidden');
+            document.getElementById('eb-test-step-learning').classList.remove('hidden');
+
+            const container = document.getElementById('eb-syllables-box');
+            container.innerHTML = currentTestSyllables.map(s => `<div class="p-3 bg-slate-100 dark:bg-slate-900 rounded-xl font-mono font-bold text-center text-brand-600">${s}</div>`).join('');
+
+            let c = 12;
+            document.getElementById('eb-countdown').innerText = c;
+            ebTimer = setInterval(() => {
+                c--;
+                document.getElementById('eb-countdown').innerText = c;
+                if (c <= 0) {
+                    clearInterval(ebTimer);
+                    document.getElementById('eb-test-step-learning').classList.add('hidden');
+                    document.getElementById('eb-test-step-recall').classList.remove('hidden');
+                    document.getElementById('eb-recall-input').value = "";
+                    document.getElementById('eb-recall-input').focus();
+                }
+            }, 1000);
+        }
+
+        function submitEbbinghausRecall() {
+            const input = document.getElementById('eb-recall-input').value.toUpperCase();
+            const words = input.split(/[\s,\n]+/).filter(w => w.length > 0);
+            let correct = 0;
+            currentTestSyllables.forEach(s => {
+                if (words.includes(s)) correct++;
+            });
+            const percent = Math.round((correct / currentTestSyllables.length) * 100);
+
+            document.getElementById('eb-test-step-recall').classList.add('hidden');
+            document.getElementById('eb-test-step-result').classList.remove('hidden');
+
+            document.getElementById('eb-score-val').innerText = percent + '%';
+            document.getElementById('eb-score-desc').innerText = `Odtworzyłeś prawidłowo ${correct} z ${currentTestSyllables.length} sylab (Wzorzec: ${currentTestSyllables.join(', ')}).`;
+        }
+
+        function resetEbbinghausTest() {
+            document.getElementById('eb-test-step-result').classList.add('hidden');
+            document.getElementById('eb-test-step-1').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
