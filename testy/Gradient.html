@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo: Złożoność Poznawcza a Efekt Uczenia się</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; background: #f4f4f9; color: #333; }
+        .card { max-width: 750px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        #box { width: 450px; height: 220px; margin: 20px auto; background: #fafafa; border: 2px solid #ddd; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 70px; letter-spacing: 5px; }
+        .hidden { display: none; }
+        button { padding: 12px 25px; font-size: 18px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 6px; transition: background 0.2s; }
+        button:hover { background: #0056b3; }
+        .charts-container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+        .chart-box { background: white; padding: 15px; border-radius: 10px; width: 650px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .timer-box { font-size: 24px; color: #d9534f; font-weight: bold; margin: 15px 0; }
+        .info-box { background: #eef2f7; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 18px; line-height: 1.5; text-align: left; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Eksperyment: Gradient Złożoności i Uczenie się</h1>
+    
+    <!-- EKRAN STARTOWY -->
+    <div id="instructions">
+        <p>Ten eksperyment składa się z <strong>trzech zadań</strong> o rosnącym stopniu trudności:</p>
+        <ol style="text-align: left; display: inline-block; margin-bottom: 20px;">
+            <li><strong>Prosty Czas Reakcji:</strong> Naciskaj SPACJĘ, gdy pojawi się kropka (•).</li>
+            <li><strong>Reakcja Wyboru:</strong> Naciskaj ← lub → zgodnie ze strzałką (po 5 z każdej strony na blok).</li>
+            <li><strong>Zmodyfikowany Test Flankera:</strong> Reaguj zgodnie z <strong>większością znaków</strong> w sekwencji.</li>
+        </ol>
+        <p>Między blokami będą 30-sekundowe przerwy. Przed każdym nowym zadaniem pojawi się komunikat.</p>
+        <br>
+        <button onclick="startExperiment()">Rozpocznij Eksperyment</button>
+    </div>
+
+    <!-- EKRAN ZAPOWIEDZI NOWEGO ZADANIA -->
+    <div id="task-intro-screen" class="hidden">
+        <h2 id="intro-task-title" style="color: #007bff;">Teraz będzie: Zadanie</h2>
+        <div class="info-box" id="intro-task-desc">Opis zasad...</div>
+        <button onclick="beginTaskFromIntro()">Zaczynamy</button>
+    </div>
+
+    <!-- EKRAN PRZERWY -->
+    <div id="break-screen" class="hidden">
+        <h2 id="break-title">Przerwa</h2>
+        <p>Odpocznij przez chwilę. Kolejna część rozpocznie się automatycznie.</p>
+        <div class="timer-box" id="timer-display">30</div>
+        <button onclick="skipBreak()">Pomiń przerwę</button>
+    </div>
+
+    <!-- EKRAN EKSPERYMENTU -->
+    <div id="experiment" class="hidden">
+        <h3 id="task-title">Zadanie 1: Prosty Czas Reakcji</h3>
+        <h4 id="block-info">Blok 1 / 3 (Próba 1 / 10)</h4>
+        <div id="box">+</div>
+    </div>
+
+    <!-- EKRAN WYNIKÓW -->
+    <div id="results" class="hidden">
+        <h2>Podsumowanie Wyników (Rozrzut i Krzywe Uczenia się)</h2>
+        <p>Jaśniejsze punkty pokazują czasy poszczególnych prób, a linie przedstawiają średnią w blokach.</p>
+        <div class="charts-container">
+            <div class="chart-box">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+        <br>
+        <button onclick="location.reload()">Powtórz eksperyment</button>
+    </div>
+</div>
+
+<script>
+    const tasks = [
+        { 
+            name: "1. Prosty Czas Reakcji", 
+            type: "simple",
+            desc: "W tym zadaniu na ekranie będzie pojawiać się kropka (•). Twoim zadaniem jest jak najszybsze naciśnięcie klawisza <strong>SPACJA</strong>."
+        },
+        { 
+            name: "2. Reakcja Wyboru", 
+            type: "choice",
+            desc: "Teraz będzie zadanie wyboru. Na ekranie pojawia się strzałka w lewo (←) lub w prawo (→). Naciśnij odpowiednią strzałkę na klawiaturze (po 5 z każdej strony na blok)."
+        },
+        { 
+            name: "3. Zmodyfikowany Test Flankera", 
+            type: "flanker",
+            desc: "Ostatnie zadanie: Zmodyfikowany Test Flankera. Na ekranie pojawi się 5 strzałek. Twoim zadaniem jest zareagować na <strong>kierunek większości</strong> znaków."
+        }
+    ];
+
+    let currentTaskIdx = 0;
+    let currentBlock = 1;
+    let currentTrial = 1;
+    
+    const totalBlocks = 3;
+    const trialsPerBlock = 10;
+
+    let allTaskAverages = [[], [], []];
+    let allTaskRawTrials = [[], [], []]; // Przechowywane surowe czasy dla 30 prób każdego zadania
+    
+    let currentStimulusData = null; 
+    let startTime = null;
+    let waitingForResponse = false;
+    let currentBlockTrialsData = [];
+    let breakTimerInterval = null;
+    let trialPool = [];
+
+    function startExperiment() {
+        document.getElementById('instructions').classList.add('hidden');
+        showTaskIntro();
+    }
+
+    function showTaskIntro() {
+        let task = tasks[currentTaskIdx];
+        document.getElementById('intro-task-title').innerText = `Teraz będzie: ${task.name}`;
+        document.getElementById('intro-task-desc').innerHTML = task.desc;
+        document.getElementById('task-intro-screen').classList.remove('hidden');
+    }
+
+    function beginTaskFromIntro() {
+        document.getElementById('task-intro-screen').classList.add('hidden');
+        document.getElementById('experiment').classList.remove('hidden');
+        prepareBlockPool();
+        nextTrial();
+    }
+
+    function prepareBlockPool() {
+        let type = tasks[currentTaskIdx].type;
+        if (type === 'choice') {
+            trialPool = ['left', 'left', 'left', 'left', 'left', 'right', 'right', 'right', 'right', 'right'];
+            shuffleArray(trialPool);
+        } else if (type === 'flanker') {
+            trialPool = [
+                { majority: 'left', text: '<<<<<' },
+                { majority: 'left', text: '<<><<' },
+                { majority: 'left', text: '<><<<' },
+                { majority: 'left', text: '<<><<' },
+                { majority: 'left', text: '<<<<<' },
+                { majority: 'right', text: '>>>>>' },
+                { majority: 'right', text: '>><>>' },
+                { majority: 'right', text: '<>><>' },
+                { majority: 'right', text: '>><>>' },
+                { majority: 'right', text: '>>>>>' }
+            ];
+            shuffleArray(trialPool);
+        }
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function nextTrial() {
+        if (currentTrial > trialsPerBlock) {
+            let avg = currentBlockTrialsData.reduce((a, b) => a + b, 0) / currentBlockTrialsData.length;
+            allTaskAverages[currentTaskIdx].push(Math.round(avg));
+            
+            // Dopisz surowe próby do globalnej tablicy zadania
+            allTaskRawTrials[currentTaskIdx].push(...currentBlockTrialsData);
+            
+            currentBlockTrialsData = [];
+
+            currentBlock++;
+            currentTrial = 1;
+
+            if (currentBlock > totalBlocks) {
+                advanceToNextTaskOrResults();
+            } else {
+                triggerBreak();
+            }
+            return;
+        }
+
+        document.getElementById('task-title').innerText = tasks[currentTaskIdx].name;
+        document.getElementById('block-info').innerText = `Blok ${currentBlock} / ${totalBlocks} (Próba ${currentTrial} / ${trialsPerBlock})`;
+        
+        let box = document.getElementById('box');
+        box.innerText = "+";
+        waitingForResponse = false;
+
+        let delay = Math.random() * 800 + 400; 
+        setTimeout(() => {
+            generateStimulus();
+            startTime = performance.now();
+            waitingForResponse = true;
+        }, delay);
+    }
+
+    function generateStimulus() {
+        let box = document.getElementById('box');
+        let type = tasks[currentTaskIdx].type;
+
+        if (type === 'simple') {
+            currentStimulusData = 'space';
+            box.innerText = '•';
+        } else if (type === 'choice') {
+            currentStimulusData = trialPool[currentTrial - 1]; 
+            box.innerText = currentStimulusData === 'left' ? '←' : '→';
+        } else if (type === 'flanker') {
+            let item = trialPool[currentTrial - 1];
+            currentStimulusData = item.majority; 
+            box.innerText = item.text;
+        }
+    }
+
+    function triggerBreak() {
+        document.getElementById('experiment').classList.add('hidden');
+        document.getElementById('break-screen').classList.remove('hidden');
+        
+        let timeLeft = 30;
+        document.getElementById('timer-display').innerText = timeLeft;
+        document.getElementById('break-title').innerText = `Przerwa (Koniec Bloku ${currentBlock-1})`;
+
+        breakTimerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-display').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(breakTimerInterval);
+                resumeFromBreak();
+            }
+        }, 1000);
+    }
+
+    function skipBreak() {
+        clearInterval(breakTimerInterval);
+        resumeFromBreak();
+    }
+
+    function resumeFromBreak() {
+        document.getElementById('break-screen').classList.add('hidden');
+        document.getElementById('experiment').classList.remove('hidden');
+        prepareBlockPool(); 
+        nextTrial();
+    }
+
+    function advanceToNextTaskOrResults() {
+        currentTaskIdx++;
+        currentBlock = 1;
+        currentTrial = 1;
+
+        if (currentTaskIdx >= tasks.length) {
+            showResults();
+        } else {
+            showTaskIntro(); 
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (!waitingForResponse) return;
+
+        let key = e.key;
+        let type = tasks[currentTaskIdx].type;
+        let correct = false;
+
+        if (type === 'simple' && key === ' ') {
+            correct = true;
+        } else if (type === 'choice' || type === 'flanker') {
+            if (currentStimulusData === 'left' && key === 'ArrowLeft') correct = true;
+            if (currentStimulusData === 'right' && key === 'ArrowRight') correct = true;
+        }
+
+        if (correct) {
+            let rt = performance.now() - startTime;
+            waitingForResponse = false;
+            currentBlockTrialsData.push(Math.round(rt));
+            currentTrial++;
+            setTimeout(nextTrial, 350);
+        }
+    });
+
+    function showResults() {
+        document.getElementById('experiment').classList.add('hidden');
+        document.getElementById('results').classList.remove('hidden');
+
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        
+        // Przygotowanie danych w formacie współrzędnych {x, y} dla wykresu rozrzutu (Scatter)
+        // Oś X: numer próby od 1 do 30, Oś Y: czas reakcji
+        function formatScatterData(rawArray) {
+            return rawArray.map((val, idx) => ({ x: idx + 1, y: val }));
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                // Etykiety osi X od 1 do 30 dla pełnego rozrzutu prób
+                labels: Array.from({length: 30}, (_, i) => i + 1),
+                datasets: [
+                    // --- LINIE ŚREDNICH Z BLOKÓW ---
+                    // Dla liniowego wykresu z 3 punktami w Chart.js przy 30 etykietach musimy rozmieścić średnie na pozycjach 5, 15, 25 lub użyć osobnego podejścia. 
+                    // Najprościej i najczytelniej dla 3 bloków zrobimy osobne serie liniowe dla średnich przypisane do odpowiednich prób:
+                    
+                    {
+                        label: 'Średnia: Prosty Czas Reakcji',
+                        data: [{x: 5, y: allTaskAverages[0][0]}, {x: 15, y: allTaskAverages[0][1]}, {x: 25, y: allTaskAverages[0][2]}],
+                        borderColor: '#28a745',
+                        backgroundColor: '#28a745',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        showLine: true,
+                        type: 'line'
+                    },
+                    {
+                        label: 'Rozrzut prób: Prosty',
+                        data: formatScatterData(allTaskRawTrials[0]),
+                        backgroundColor: 'rgba(40, 167, 69, 0.3)',
+                        borderColor: 'transparent',
+                        pointRadius: 4,
+                        type: 'scatter'
+                    },
+
+                    {
+                        label: 'Średnia: Reakcja Wyboru',
+                        data: [{x: 5, y: allTaskAverages[1][0]}, {x: 15, y: allTaskAverages[1][1]}, {x: 25, y: allTaskAverages[1][2]}],
+                        borderColor: '#007bff',
+                        backgroundColor: '#007bff',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        showLine: true,
+                        type: 'line'
+                    },
+                    {
+                        label: 'Rozrzut prób: Wybór',
+                        data: formatScatterData(allTaskRawTrials[1]),
+                        backgroundColor: 'rgba(0, 123, 255, 0.3)',
+                        borderColor: 'transparent',
+                        pointRadius: 4,
+                        type: 'scatter'
+                    },
+
+                    {
+                        label: 'Średnia: Zmodyfikowany Flanker',
+                        data: [{x: 5, y: allTaskAverages[2][0]}, {x: 15, y: allTaskAverages[2][1]}, {x: 25, y: allTaskAverages[2][2]}],
+                        borderColor: '#dc3545',
+                        backgroundColor: '#dc3545',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        showLine: true,
+                        type: 'line'
+                    },
+                    {
+                        label: 'Rozrzut prób: Flanker',
+                        data: formatScatterData(allTaskRawTrials[2]),
+                        backgroundColor: 'rgba(220, 53, 69, 0.3)',
+                        borderColor: 'transparent',
+                        pointRadius: 4,
+                        type: 'scatter'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        min: 0,
+                        max: 31,
+                        title: { display: true, text: 'Numer Próby w Czasie (1 - 30)' }
+                    },
+                    y: { 
+                        beginAtZero: false, 
+                        title: { display: true, text: 'Czas Reakcji (ms)' } 
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
