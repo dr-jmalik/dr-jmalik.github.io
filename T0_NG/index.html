@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Trening przed badaniem (T0): N-back + PVT</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-inner: #0f172a;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #22c55e;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --border: #334155;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    padding: 12px;
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 560px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  }
+
+  h1, h2 { margin-top: 0; color: var(--text); line-height: 1.25; }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.3rem; }
+  p { color: var(--muted); line-height: 1.55; font-size: 0.96rem; }
+
+  .hidden { display: none !important; }
+
+  .badge {
+    display: inline-block;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--accent);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+  }
+
+  .step-list {
+    background: var(--card-inner);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 16px 0;
+  }
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 0.92rem;
+    color: var(--text);
+  }
+  .step-item:last-child { margin-bottom: 0; }
+  .step-num {
+    background: var(--accent);
+    color: #0f172a;
+    font-weight: 800;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    margin-top: 2px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 16px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--accent);
+    color: #0f172a;
+    margin-top: 10px;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .btn:hover { background: var(--accent-hover); color: #fff; }
+  .btn:active { transform: scale(0.98); }
+  .btn-secondary {
+    background: var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { background: #475569; }
+
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .stimulus-box {
+    height: 230px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-inner);
+    border-radius: 16px;
+    border: 3px solid var(--border);
+    margin: 14px 0;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: border-color 0.08s ease, background-color 0.08s ease;
+  }
+
+  .stimulus-letter {
+    font-size: 6rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .fixation {
+    font-size: 2.5rem;
+    color: var(--muted);
+  }
+
+  .pvt-counter {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 4.2rem;
+    font-weight: 800;
+    color: var(--error);
+  }
+
+  .pvt-msg {
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 0 14px;
+  }
+
+  .feedback-correct {
+    border-color: var(--success) !important;
+    background-color: rgba(34, 197, 94, 0.14) !important;
+  }
+  .feedback-wrong {
+    border-color: var(--error) !important;
+    background-color: rgba(239, 68, 68, 0.16) !important;
+  }
+
+  .response-btn {
+    height: 110px;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: #1e293b;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    touch-action: manipulation;
+  }
+  .response-btn:active, .response-btn.pressed {
+    background: var(--accent) !important;
+    color: #0f172a !important;
+  }
+
+  .example-strip {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .example-card {
+    width: 48px;
+    height: 58px;
+    border-radius: 10px;
+    background: var(--card-inner);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .example-card.match {
+    border-color: var(--success);
+    color: var(--success);
+    background: rgba(34, 197, 94, 0.12);
+  }
+
+  .rest-timer {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--accent);
+    text-align: center;
+    margin: 12px 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .stat-card {
+    background: var(--card-inner);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .stat-label { font-size: 0.78rem; color: var(--muted); }
+  .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-top: 4px; }
+  .stat-sub { font-size: 0.74rem; color: var(--muted); margin-top: 2px; }
+
+  .status-banner {
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    margin-top: 14px;
+  }
+  .status-ok {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid var(--success);
+    color: #dcfce7;
+  }
+  .status-retry {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid var(--warning);
+    color: #fef3c7;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 1. EKRAN POWITALNY -->
+  <div id="screen-welcome">
+    <span class="badge">Sesja zapoznawcza (T0)</span>
+    <h1>Trening zadań poznawczych</h1>
+    <p>Ten krótki trening (ok. <strong>3,5 minuty</strong>) pozwoli Ci zapoznać się z zadaniami, które wykonasz podczas wizyt w laboratorium. Działa na telefonie, tablecie i komputerze – żadne dane nie są zapisywane.</p>
+
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div><strong>Zadanie 1-back (ok. 40 s):</strong> rozgrzewka pamięciowa z literami.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div><strong>Zadanie 2-back (ok. 75 s):</strong> główne zadanie pamięci roboczej.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div><strong>Test czujności PVT (60 s):</strong> szybka reakcja na czerwony licznik.</div>
+      </div>
+    </div>
+
+    <p style="font-size: 0.86rem;">💡 Wycisz powiadomienia i usiądź wygodnie na czas ćwiczenia.</p>
+    <button type="button" class="btn" id="btn-start-training">Rozpocznij trening</button>
+  </div>
+
+  <!-- 2. INSTRUKCJA DO N-BACK -->
+  <div id="screen-instruction" class="hidden">
+    <span class="badge" id="inst-badge">Krok 1 z 3</span>
+    <h2 id="inst-title">Instrukcja: Zadanie 1-back</h2>
+    <p id="inst-desc"></p>
+    <div class="example-strip" id="inst-example"></div>
+    <p style="font-size: 0.88rem; background: var(--card-inner); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+      <strong>Zasada reakcji:</strong> Dotknij przycisku <strong>ZGODNOŚĆ</strong> (lub naciśnij <strong>SPACJĘ</strong> na klawiaturze) tylko wtedy, gdy widzisz powtórzenie. Jeśli litera jest inna – nie rób nic.<br>
+      <span style="color: var(--success);">Zielona ramka</span> = dobra reakcja, <span style="color: var(--error);">czerwona ramka</span> = pomyłka.
+    </p>
+    <button type="button" class="btn" id="btn-start-block">Zaczynam zadanie</button>
+  </div>
+
+  <!-- 3. EKRAN ZADANIA N-BACK -->
+  <div id="screen-task" class="hidden">
+    <div class="task-header">
+      <span class="badge" style="margin:0;" id="task-badge">1-back</span>
+      <span id="task-progress">Próba 1 / 15</span>
+    </div>
+
+    <div class="stimulus-box" id="stimulus-box">
+      <div class="fixation" id="stimulus-display">+</div>
+    </div>
+
+    <button type="button" class="btn response-btn" id="btn-respond">
+      ZGODNOŚĆ (SPACJA)
+    </button>
+  </div>
+
+  <!-- 4. EKRAN PRZERWY I INSTRUKCJI DO PVT -->
+  <div id="screen-rest" class="hidden">
+    <span class="badge">Krok 3 z 3: Test czujności (PVT)</span>
+    <h2>Krótka przerwa przed PVT</h2>
+    <div class="rest-timer" id="rest-countdown">00:15</div>
+
+    <div style="background: var(--card-inner); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px;">
+      <strong style="color: var(--accent);">Jak wykonać ostatnie zadanie (60 s):</strong>
+      <p style="margin: 6px 0 0 0; font-size: 0.9rem;">
+        Patrz na puste pole na ekranie. W losowych momentach pojawi się <strong>czerwony licznik milisekund</strong>. Dotknij przycisku (lub naciśnij <strong>SPACJĘ</strong>) <strong>JAK NAJSZYBCIEJ</strong>, gdy tylko zobaczysz cyfry. Nie klikaj wcześniej!
+      </p>
+    </div>
+
+    <button type="button" class="btn btn-secondary" id="btn-skip-rest">Zacznij PVT od razu</button>
+  </div>
+
+  <!-- 5. EKRAN TESTU PVT -->
+  <div id="screen-pvt" class="hidden">
+    <div class="task-header">
+      <span class="badge" style="margin:0; color: var(--error); background: rgba(239,68,68,0.15);">Test Czujności (PVT)</span>
+      <span id="pvt-timer-display">Pozostało: 01:00</span>
+    </div>
+
+    <div class="stimulus-box" id="pvt-box">
+      <div id="pvt-display" class="pvt-msg" style="color: var(--muted);">Czekaj na sygnał...</div>
+    </div>
+
+    <button type="button" class="btn response-btn" id="btn-pvt-respond" style="border-color: var(--error); color: var(--error);">
+      REAGUJ TERAZ (SPACJA)
+    </button>
+  </div>
+
+  <!-- 6. PODSUMOWANIE TRENINGU -->
+  <div id="screen-summary" class="hidden">
+    <span class="badge" style="background: rgba(34,197,94,0.15); color: var(--success);">Trening ukończony</span>
+    <h2>Twoje wyniki treningowe</h2>
+    <p style="font-size: 0.9rem; margin-bottom: 10px;">Poniższe wyniki służą wyłącznie Tobie do sprawdzenia, czy zasady zadań są jasne:</p>
+
+    <div class="stats-grid" id="summary-stats"></div>
+    <div id="summary-advice"></div>
+
+    <button type="button" class="btn" style="margin-top: 16px;" id="btn-restart">Powtórz trening jeszcze raz</button>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const LETTERS = ['B', 'C', 'D', 'G', 'H', 'K', 'P', 'Q', 'T', 'W'];
+  const STIMULUS_DURATION = 500;
+  const ISI_DURATION = 2000;
+  const TRIAL_DURATION = STIMULUS_DURATION + ISI_DURATION;
+  const FEEDBACK_FLASH_MS = 350;
+
+  const TRAINING_BLOCKS = [
+    { n: 1, trials: 15, targets: 4, label: "1-back (Rozgrzewka)" },
+    { n: 2, trials: 30, targets: 9, label: "2-back (Pamięć robocza)" }
+  ];
+  const REST_SECONDS = 15;
+  const PVT_SECONDS = 60;
+
+  let state = {
+    currentScreen: 'welcome',
+    currentBlockIndex: 0,
+    sequence: [],
+    currentTrialIndex: 0,
+    trialStartTime: 0,
+    respondedThisTrial: false,
+    nbackResults: [],
+    trialTimer: null,
+    stimTimer: null,
+    feedbackTimer: null,
+    restInterval: null,
+    pvtActive: false,
+    pvtStartTime: 0,
+    pvtDurationMs: PVT_SECONDS * 1000,
+    pvtTimerInterval: null,
+    pvtWaitTimeout: null,
+    pvtRafId: null,
+    pvtStimulusVisible: false,
+    pvtStimulusOnset: 0,
+    pvtResults: []
+  };
+
+  function getNow() {
+    return (window.performance && typeof performance.now === 'function') ? performance.now() : Date.now();
+  }
+
+  function showScreen(screenId) {
+    const screens = ['screen-welcome', 'screen-instruction', 'screen-task', 'screen-rest', 'screen-pvt', 'screen-summary'];
+    screens.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+    const target = document.getElementById(screenId);
+    if (target) target.classList.remove('hidden');
+    state.currentScreen = screenId.replace('screen-', '');
+    window.scrollTo(0, 0);
+  }
+
+  function generateSequence(n, totalTrials, targetCount) {
+    let seq = new Array(totalTrials).fill(null);
+    let isTarget = new Array(totalTrials).fill(false);
+
+    let availableIndices = [];
+    for (let i = n; i < totalTrials; i++) {
+      availableIndices.push(i);
+    }
+
+    for (let i = availableIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = availableIndices[i];
+      availableIndices[i] = availableIndices[j];
+      availableIndices[j] = tmp;
+    }
+
+    const safeTargetCount = Math.min(targetCount, availableIndices.length);
+    for (let i = 0; i < safeTargetCount; i++) {
+      isTarget[availableIndices[i]] = true;
+    }
+
+    for (let i = 0; i < totalTrials; i++) {
+      if (isTarget[i] && i >= n) {
+        seq[i] = seq[i - n];
+      } else {
+        let candidates = LETTERS.filter(l => {
+          if (i >= n && l === seq[i - n]) return false;
+          if (i > 0 && l === seq[i - 1]) return false;
+          return true;
+        });
+        if (candidates.length === 0) candidates = LETTERS;
+        seq[i] = candidates[Math.floor(Math.random() * candidates.length)];
+      }
+    }
+
+    return seq.map((letter, idx) => ({
+      index: idx,
+      letter: letter,
+      isTarget: isTarget[idx],
+      isEvaluable: idx >= n
+    }));
+  }
+
+  function startTraining() {
+    state.currentBlockIndex = 0;
+    state.nbackResults = [];
+    state.pvtResults = [];
+    prepareNBackInstruction();
+  }
+
+  function prepareNBackInstruction() {
+    const blockCfg = TRAINING_BLOCKS[state.currentBlockIndex];
+    document.getElementById('inst-badge').textContent = `Krok ${state.currentBlockIndex + 1} z 3: ${blockCfg.label}`;
+
+    const exContainer = document.getElementById('inst-example');
+    if (blockCfg.n === 1) {
+      document.getElementById('inst-title').textContent = 'Instrukcja: Zadanie 1-back';
+      document.getElementById('inst-desc').innerHTML = 'Na ekranie będą pojawiać się pojedyncze litery. Naciśnij <strong>ZGODNOŚĆ</strong>, gdy aktualna litera jest <strong>TAKA SAMA jak litera bezpośrednio przed nią</strong> (1 krok wstecz).';
+      exContainer.innerHTML = `
+        <div class="example-card">K</div>
+        <div class="example-card">T</div>
+        <div class="example-card match">T</div>
+        <div class="example-card">B</div>
+      `;
+    } else {
+      document.getElementById('inst-title').textContent = 'Instrukcja: Zadanie 2-back';
+      document.getElementById('inst-desc').innerHTML = 'Teraz trudniej! Naciśnij <strong>ZGODNOŚĆ</strong> tylko wtedy, gdy aktualna litera jest <strong>TAKA SAMA jak litera wyświetlona DWA kroki wcześniej</strong> (pomijając literę środkową).';
+      exContainer.innerHTML = `
+        <div class="example-card">G</div>
+        <div class="example-card">P</div>
+        <div class="example-card match">G</div>
+        <div class="example-card">K</div>
+      `;
+    }
+    showScreen('screen-instruction');
+  }
+
+  function startCurrentNBackBlock() {
+    const blockCfg = TRAINING_BLOCKS[state.currentBlockIndex];
+    state.sequence = generateSequence(blockCfg.n, blockCfg.trials, blockCfg.targets);
+    state.currentTrialIndex = 0;
+
+    document.getElementById('task-badge').textContent = blockCfg.label;
+    showScreen('screen-task');
+
+    const box = document.getElementById('stimulus-box');
+    box.className = 'stimulus-box';
+    const display = document.getElementById('stimulus-display');
+    display.className = 'fixation';
+    display.textContent = '+';
+    document.getElementById('task-progress').textContent = 'Przygotuj się...';
+
+    setTimeout(runNextNBackTrial, 1200);
+  }
+
+  function runNextNBackTrial() {
+    clearTimeout(state.feedbackTimer);
+    const box = document.getElementById('stimulus-box');
+    box.className = 'stimulus-box';
+
+    if (state.currentTrialIndex >= state.sequence.length) {
+      finishCurrentNBackBlock();
+      return;
+    }
+
+    const trial = state.sequence[state.currentTrialIndex];
+    state.respondedThisTrial = false;
+    state.trialStartTime = getNow();
+
+    const display = document.getElementById('stimulus-display');
+    display.className = 'stimulus-letter';
+    display.textContent = trial.letter;
+
+    document.getElementById('task-progress').textContent = `Próba ${state.currentTrialIndex + 1} / ${state.sequence.length}`;
+
+    state.stimTimer = setTimeout(() => {
+      display.className = 'fixation';
+      display.textContent = '+';
+    }, STIMULUS_DURATION);
+
+    state.trialTimer = setTimeout(() => {
+      if (!state.respondedThisTrial) {
+        recordNBackOutcome(false, null);
+      }
+      state.currentTrialIndex++;
+      runNextNBackTrial();
+    }, TRIAL_DURATION);
+  }
+
+  function handleNBackResponse() {
+    if (state.currentScreen !== 'task' || state.respondedThisTrial) return;
+    const rt = Math.round(getNow() - state.trialStartTime);
+    state.respondedThisTrial = true;
+
+    const trial = state.sequence[state.currentTrialIndex];
+    recordNBackOutcome(true, rt);
+
+    if (trial.isEvaluable) {
+      clearTimeout(state.feedbackTimer);
+      const box = document.getElementById('stimulus-box');
+      box.classList.remove('feedback-correct', 'feedback-wrong');
+      box.classList.add(trial.isTarget ? 'feedback-correct' : 'feedback-wrong');
+
+      state.feedbackTimer = setTimeout(() => {
+        box.classList.remove('feedback-correct', 'feedback-wrong');
+      }, FEEDBACK_FLASH_MS);
+    }
+  }
+
+  function recordNBackOutcome(responded, rt) {
+    const blockCfg = TRAINING_BLOCKS[state.currentBlockIndex];
+    const trial = state.sequence[state.currentTrialIndex];
+    if (!trial || !trial.isEvaluable) return;
+
+    let outcome = 'CR';
+    if (trial.isTarget && responded) outcome = 'HIT';
+    else if (trial.isTarget && !responded) outcome = 'MISS';
+    else if (!trial.isTarget && responded) outcome = 'FA';
+
+    state.nbackResults.push({
+      n: blockCfg.n,
+      outcome: outcome,
+      rt: rt
+    });
+  }
+
+  function finishCurrentNBackBlock() {
+    clearTimeout(state.stimTimer);
+    clearTimeout(state.trialTimer);
+    clearTimeout(state.feedbackTimer);
+    state.currentBlockIndex++;
+
+    if (state.currentBlockIndex < TRAINING_BLOCKS.length) {
+      prepareNBackInstruction();
+    } else {
+      startRestScreen();
+    }
+  }
+
+  function startRestScreen() {
+    let remaining = REST_SECONDS;
+    document.getElementById('rest-countdown').textContent = `00:${String(remaining).padStart(2, '0')}`;
+    showScreen('screen-rest');
+
+    state.restInterval = setInterval(() => {
+      remaining--;
+      document.getElementById('rest-countdown').textContent = `00:${String(remaining).padStart(2, '0')}`;
+      if (remaining <= 0) {
+        finishRestAndStartPVT();
+      }
+    }, 1000);
+  }
+
+  function finishRestAndStartPVT() {
+    clearInterval(state.restInterval);
+    startPVT();
+  }
+
+  function startPVT() {
+    state.pvtActive = true;
+    state.pvtDurationMs = PVT_SECONDS * 1000;
+    state.pvtStartTime = getNow();
+    state.pvtStimulusVisible = false;
+
+    showScreen('screen-pvt');
+    scheduleNextPVTStimulus();
+
+    state.pvtTimerInterval = setInterval(() => {
+      const elapsed = getNow() - state.pvtStartTime;
+      const remSec = Math.max(0, Math.ceil((state.pvtDurationMs - elapsed) / 1000));
+      const m = String(Math.floor(remSec / 60)).padStart(2, '0');
+      const s = String(remSec % 60).padStart(2, '0');
+      document.getElementById('pvt-timer-display').textContent = `Pozostało: ${m}:${s}`;
+
+      if (elapsed >= state.pvtDurationMs) {
+        finishPVT();
+      }
+    }, 200);
+  }
+
+  function scheduleNextPVTStimulus() {
+    if (!state.pvtActive) return;
+    state.pvtStimulusVisible = false;
+
+    const box = document.getElementById('pvt-box');
+    box.className = 'stimulus-box';
+    const display = document.getElementById('pvt-display');
+    display.className = 'pvt-msg';
+    display.style.color = 'var(--muted)';
+    display.textContent = '';
+
+    const isi = Math.floor(Math.random() * 5500) + 2000;
+    state.pvtWaitTimeout = setTimeout(() => {
+      if (!state.pvtActive) return;
+      showPVTStimulus();
+    }, isi);
+  }
+
+  function showPVTStimulus() {
+    state.pvtStimulusVisible = true;
+    state.pvtStimulusOnset = getNow();
+
+    const display = document.getElementById('pvt-display');
+    display.className = 'pvt-counter';
+
+    function updateCounter() {
+      if (!state.pvtStimulusVisible || !state.pvtActive) return;
+      const currentMs = Math.floor(getNow() - state.pvtStimulusOnset);
+      display.textContent = currentMs;
+      if (currentMs >= 10000) {
+        state.pvtStimulusVisible = false;
+        scheduleNextPVTStimulus();
+        return;
+      }
+      state.pvtRafId = requestAnimationFrame(updateCounter);
+    }
+    state.pvtRafId = requestAnimationFrame(updateCounter);
+  }
+
+  function handlePVTResponse() {
+    if (!state.pvtActive || state.currentScreen !== 'pvt') return;
+
+    const now = getNow();
+    const display = document.getElementById('pvt-display');
+    const box = document.getElementById('pvt-box');
+
+    if (!state.pvtStimulusVisible) {
+      clearTimeout(state.pvtWaitTimeout);
+      state.pvtResults.push({ type: 'FALSE_START', rt: null });
+
+      box.className = 'stimulus-box feedback-wrong';
+      display.className = 'pvt-msg';
+      display.style.color = 'var(--error)';
+      display.textContent = 'FALSTART! Poczekaj na cyfry.';
+
+      setTimeout(() => {
+        if (state.pvtActive) scheduleNextPVTStimulus();
+      }, 850);
+    } else {
+      state.pvtStimulusVisible = false;
+      cancelAnimationFrame(state.pvtRafId);
+      const rt = Math.round(now - state.pvtStimulusOnset);
+
+      state.pvtResults.push({ type: rt >= 100 ? 'VALID' : 'FALSE_START', rt: rt });
+
+      box.className = rt > 500 ? 'stimulus-box feedback-wrong' : 'stimulus-box feedback-correct';
+      display.className = 'pvt-msg';
+      display.style.color = rt > 500 ? 'var(--warning)' : 'var(--success)';
+      display.textContent = `${rt} ms`;
+
+      setTimeout(() => {
+        if (state.pvtActive) scheduleNextPVTStimulus();
+      }, 650);
+    }
+  }
+
+  function finishPVT() {
+    state.pvtActive = false;
+    clearInterval(state.pvtTimerInterval);
+    clearTimeout(state.pvtWaitTimeout);
+    cancelAnimationFrame(state.pvtRafId);
+    showSummary();
+  }
+
+  function showSummary() {
+    showScreen('screen-summary');
+
+    const rows2 = state.nbackResults.filter(r => r.n === 2);
+    const hits2 = rows2.filter(r => r.outcome === 'HIT').length;
+    const targets2 = rows2.filter(r => r.outcome === 'HIT' || r.outcome === 'MISS').length;
+    const fa2 = rows2.filter(r => r.outcome === 'FA').length;
+    const nonTargets2 = rows2.filter(r => r.outcome === 'FA' || r.outcome === 'CR').length;
+    const acc2 = rows2.length > 0 ? Math.round(((hits2 + (nonTargets2 - fa2)) / rows2.length) * 100) : 0;
+
+    const validPvt = state.pvtResults.filter(r => r.type === 'VALID' && r.rt !== null).map(r => r.rt);
+    const meanPvt = validPvt.length > 0 ? Math.round(validPvt.reduce((a, b) => a + b, 0) / validPvt.length) : 0;
+    const falseStarts = state.pvtResults.filter(r => r.type === 'FALSE_START').length;
+
+    document.getElementById('summary-stats').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-label">2-back: Poprawność</div>
+        <div class="stat-val" style="color:var(--accent)">${acc2}%</div>
+        <div class="stat-sub">Trafienia: ${hits2}/${targets2} | Błędy: ${fa2}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">PVT: Śr. czas reakcji</div>
+        <div class="stat-val" style="color:var(--success)">${meanPvt} ms</div>
+        <div class="stat-sub">Falstarty: ${falseStarts}</div>
+      </div>
+    `;
+
+    const adviceEl = document.getElementById('summary-advice');
+    if (hits2 >= Math.ceil(targets2 * 0.5) && fa2 <= Math.floor(nonTargets2 * 0.35)) {
+      adviceEl.innerHTML = `
+        <div class="status-banner status-ok">
+          <strong>Świetnie! Zadania opanowane.</strong><br>
+          Rozumiesz zasadę działania 2-backa oraz testu reakcji PVT. Jesteś gotowy(a) do wizyty w laboratorium.
+        </div>
+      `;
+    } else {
+      adviceEl.innerHTML = `
+        <div class="status-banner status-retry">
+          <strong>Warto wykonać jeszcze jedną próbę!</strong><br>
+          W zadaniu 2-back pamiętaj, aby reagować tylko wtedy, gdy litera powtarza się <strong>co drugą pozycję</strong> (np. G – P – G), a nie po każdej literze. Kliknij poniżej, aby przećwiczyć jeszcze raz.
+        </div>
+      `;
+    }
+  }
+
+  function resetTraining() {
+    clearTimeout(state.stimTimer);
+    clearTimeout(state.trialTimer);
+    clearTimeout(state.feedbackTimer);
+    clearInterval(state.restInterval);
+    clearInterval(state.pvtTimerInterval);
+    clearTimeout(state.pvtWaitTimeout);
+    cancelAnimationFrame(state.pvtRafId);
+    state.pvtActive = false;
+    showScreen('screen-welcome');
+  }
+
+  // Podpięcie przycisków nawigacyjnych (click)
+  document.getElementById('btn-start-training').addEventListener('click', startTraining);
+  document.getElementById('btn-start-block').addEventListener('click', startCurrentNBackBlock);
+  document.getElementById('btn-skip-rest').addEventListener('click', finishRestAndStartPVT);
+  document.getElementById('btn-restart').addEventListener('click', resetTraining);
+
+  // Podpięcie przycisków reakcji (natychmiastowa reakcja na dotyk/kliknięcie + blokada podwójnego wywołania)
+  function bindFastReaction(btnId, handler) {
+    const btn = document.getElementById(btnId);
+    let lastTrigger = 0;
+    const trigger = (e) => {
+      if (e.cancelable) e.preventDefault();
+      const now = Date.now();
+      if (now - lastTrigger < 150) return;
+      lastTrigger = now;
+      btn.classList.add('pressed');
+      setTimeout(() => btn.classList.remove('pressed'), 120);
+      handler();
+    };
+    btn.addEventListener('pointerdown', trigger);
+    btn.addEventListener('touchstart', trigger, { passive: false });
+    btn.addEventListener('mousedown', trigger);
+  }
+
+  bindFastReaction('btn-respond', handleNBackResponse);
+  bindFastReaction('btn-pvt-respond', handlePVTResponse);
+
+  // Obsługa Spacji na PC / tablecie z klawiaturą
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      if (state.currentScreen === 'task' || state.currentScreen === 'pvt') {
+        e.preventDefault();
+      }
+      if (state.currentScreen === 'task') {
+        const btn = document.getElementById('btn-respond');
+        btn.classList.add('pressed');
+        setTimeout(() => btn.classList.remove('pressed'), 120);
+        handleNBackResponse();
+      } else if (state.currentScreen === 'pvt') {
+        const btn = document.getElementById('btn-pvt-respond');
+        btn.classList.add('pressed');
+        setTimeout(() => btn.classList.remove('pressed'), 120);
+        handlePVTResponse();
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>
